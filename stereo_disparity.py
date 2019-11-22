@@ -139,15 +139,21 @@ for filename_left in left_file_list:
         # of disparities in use for the stereo part)
         disparity_scaled = (disparity_scaled * (256. / max_disparity)).astype(np.uint8)
 
+        # Cover up the car to avoid detection
+        pts = np.array([[0, 544], [0, 535], [440, 395], [650, 395], [1024, 490], [1024, 544]], np.int32)
+        pts = pts.reshape((-1,1,2))
+        imgL_detect = imgL.copy()
+        cv2.fillConvexPoly(imgL_detect, pts, (0,0,0))
 
         windowName = 'left image'
         cv2.namedWindow(windowName, cv2.WINDOW_NORMAL)
         cv2.resizeWindow(windowName, imgL.shape[1], imgL.shape[0])
-        tensor = cv2.dnn.blobFromImage(imgL, 1/255, (imgL.shape[1], imgL.shape[0]), [0,0,0], 1, crop=False)
+        tensor = cv2.dnn.blobFromImage(imgL_detect, 1/255, (imgL.shape[1], imgL.shape[0]), [0,0,0], 1, crop=False)
         yolo.net.setInput(tensor)
         results = yolo.net.forward(yolo.output_layer_names)
         classIDs, confidences, boxes = yolo.postprocess(imgL, results, 0.5, 0.4)
         for i in range(0, len(boxes)):
+            # Only detect people and vehicles
             if classIDs[i] not in [0,1,2,3,5,6,7]:
                 continue
             box = boxes[i]
