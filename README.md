@@ -1,5 +1,5 @@
 # Object detection with dense stereo distance estimation
-[example](example.png)
+![example](example.png)
 
 See **report.pdf** for more details.
 
